@@ -3,14 +3,22 @@
 #
 # Update terminal/tmux window titles based on location/command
 
-function update_title() {
+function update_title_clean() {
   # escape '%' in $1, make nonprintables visible
-  a=${(V)1//\%/\%\%}
+  a=${(V)2//\%/\%\%}
   a=$(print -n "%20>...>$a" | tr -d "\n")
   if [[ -n "$TMUX" ]]; then
-    print -Pn "\ek$a:$2\e\\"
+    print -Pn "\ek$1:$a\e\\"
   elif [[ "$TERM" =~ "xterm*" ]]; then
-    print -Pn "\e]0;$a:$2\a"
+    print -Pn "\e]0;$1:$a\a"
+  fi
+}
+function update_title() {
+  # escape '%' in $1, make nonprintables visible
+  if [[ -n "$TMUX" ]]; then
+    print -Pn "\ek$1:$2\e\\"
+  elif [[ "$TERM" =~ "xterm*" ]]; then
+    print -Pn "\e]0;$1:$2\a"
   fi
 }
 
@@ -28,7 +36,7 @@ function _zsh_title__preexec() {
     fg)	cmd="${(z)jobtexts[${(Q)cmd[2]:-%+}]}" ;;
     %*)	cmd="${(z)jobtexts[${(Q)cmd[1]:-%+}]}" ;;
   esac
-  update_title "%n@%m" "$cmd"
+  update_title_clean "%n@%m" "$cmd"
 }
 
 autoload -Uz add-zsh-hook
